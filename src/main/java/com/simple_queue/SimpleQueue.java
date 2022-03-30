@@ -1,12 +1,13 @@
 package com.simple_queue;
-
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import com.simple_queue.Event.AbstractEvent;
+import com.simple_queue.Event.ArrivalEvent;
+
 public class SimpleQueue {
     private static SimpleQueue simpleQueue;
-    private Queue<Event> queue;
+    private Queue<AbstractEvent> queue;
     private int maxSize;
     private int currentSize;
     private int[] arrivalInterval;
@@ -18,7 +19,7 @@ public class SimpleQueue {
         this.maxSize = maxSize;
         this.arrivalInterval = arrivalInterval;
         this.dropoutInterval = dropoutInterval;
-        this.queue = new LinkedList<Event>();
+        this.queue = new LinkedList<AbstractEvent>();
         this.currentSize = 0;
         this.lossNumber = 0;
     }
@@ -27,28 +28,20 @@ public class SimpleQueue {
         return this.maxSize == this.currentSize;
     }
 
-    public boolean addEvent(Event event) {
-        if ((this.currentSize == maxSize) && (event.getEventType().eventName.equals(EventEnum.ARRIVAL.eventName))) {
+    public boolean addEvent(AbstractEvent event) {
+        if ((this.currentSize == maxSize) && (event instanceof ArrivalEvent)) {
             this.lossNumber++;
             return false;
-        }
-        if ((event.getEventType().eventName.equals(EventEnum.ARRIVAL.eventName))) {
-            this.currentSize++;
-        }
-        if ((event.getEventType().eventName.equals(EventEnum.DROPOUT.eventName))) {
-            this.currentSize--;
         }
         return this.queue.add(event);
     }
 
     public static SimpleQueue getInstance() {
-        // Mock :)
 
-        int maxSize = 4;
-        int[] arrivalInternal = { 1, 2 };
-        int[] dropoutInterval = { 2, 3 };
-
-        // Mock :)
+        Config config = Config.getInstance();
+        int maxSize = config.getQueueSize();
+        int[] arrivalInternal = config.getArrivalInterval();
+        int[] dropoutInterval = config.getDropoutInterval();
 
         if (simpleQueue == null)
             simpleQueue = new SimpleQueue(maxSize, arrivalInternal, dropoutInterval);
@@ -98,13 +91,15 @@ public class SimpleQueue {
     public void decreaseQueue() {
         this.currentSize--;
     }
+
     @Override
     public String toString() {
-        return "SimpleQueue [arrivalInterval=" + Arrays.toString(arrivalInterval) + ", currentSize=" + currentSize
-                + ", dropoutInterval=" + Arrays.toString(dropoutInterval) + ", lossNumber=" + lossNumber + ", maxSize="
-                + maxSize + ", queue=" + queue + "]";
-    }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("\nSimpleQueue information\n").append("Final Size = " + currentSize)
+                .append("\nMaximum Size = " + maxSize ).append("\nInterval for arrival = " + arrivalInterval[0] + "," + arrivalInterval[1])
+                .append("\nInterval for dropout = " + dropoutInterval[0] + "," + dropoutInterval[1]).append("\nLoss number = " + lossNumber);
 
-    
+        return stringBuilder.toString();
+    }
 
 }

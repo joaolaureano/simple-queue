@@ -4,10 +4,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import com.simple_queue.Event.AbstractEvent;
+import com.simple_queue.Event.FirstArrivalEvent;
+import com.simple_queue.Event.OrderEvent;
+
 public class Scheduler {
 
     private static Scheduler scheduler;
-    private ArrayList<Event> queue = new ArrayList<Event>();
+    public ArrayList<OrderEvent> queue = new ArrayList<OrderEvent>();
+    private int indexOrder = 0;
 
     public static Scheduler getInstance() {
         if (scheduler == null)
@@ -16,80 +21,87 @@ public class Scheduler {
 
     }
 
-    public Event start(double time) {
-        this.queue = new ArrayList<Event>();
+    public AbstractEvent start(double time) {
+        this.queue = new ArrayList<OrderEvent>();
 
-        EventEnum eventType = EventEnum.ARRIVAL;
-        Event event = new Event(eventType, time);
-        event.setFinished(false);
-        this.queue.add(event);
+        AbstractEvent event = new FirstArrivalEvent(time);
+        event.setTime(time);
+        event.setFinished(true);
+        SimpleQueue.getInstance().addEvent(event);
+        addEvent(event);
+        this.queue.get(0).order = indexOrder;
+        this.queue.get(0).orderCreated = indexOrder;
+
+        indexOrder++;
+        event.execute(SimpleQueue.getInstance());
 
         return event;
     }
 
-    public double calculate(int[] interval, double randomNumber) {
-        return interval[1] - interval[0] * randomNumber + interval[0];
+    public void addEvent(AbstractEvent event) {
+        OrderEvent oEvent = new OrderEvent(event);
+        oEvent.order = -1;
+        oEvent.orderCreated = indexOrder;
+        this.queue.add(oEvent);
     }
 
-    public void arrival() {
+    public AbstractEvent next() {
+        
         SimpleQueue singletonQueue = SimpleQueue.getInstance();
-        int maxSize = singletonQueue.getMaxSize();
-        int currentSize = singletonQueue.getCurrentSize();
-        if (currentSize < maxSize) {
-            singletonQueue.increaseQueue();
-            if (currentSize <= 1) {
-                // EventEnum eventType = EventEnum.DROPOUT;
-                // Event event = new Event(eventType, time);
-                // event.setFinished(false);
-                // this.queue.add(event);
-                // agendar saida
-            }
-        }
-        // EventEnum eventType = EventEnum.ARRIVAL;
-        // Event event = new Event(eventType, time);
-        // event.setFinished(false);
-        // this.queue.add(event);
-        // agendar entrada
-    }
-
-    public void dropout() {
-        SimpleQueue singletonQueue = SimpleQueue.getInstance();
-        singletonQueue.decreaseQueue();
-        int currentSize = singletonQueue.getCurrentSize();
-        if (currentSize >= 1)
-            // EventEnum eventType = EventEnum.DROPOUT;
-            // Event event = new Event(eventType, time);
-            // event.setFinished(false);
-            // this.queue.add(event);
-            // agendar saida
-            return;
-
-    }
-
-    public void next() {
-        SimpleQueue singletonQueue = SimpleQueue.getInstance();
-        Collections.sort(queue, new Comparator<Event>() {
+        AbstractEvent lastEvent = getLast();
+        Collections.sort(queue, new Comparator<OrderEvent>() {
             @Override
-            public int compare(Event event1, Event event2) {
-                return (Double.valueOf(event1.getTime())).compareTo((Double.valueOf(event2.getTime())));
+            public int compare(OrderEvent event1, OrderEvent event2) {
+                return (Double.valueOf(event1.event.getTime())).compareTo((Double.valueOf(event2.event.getTime())));
             }
         });
-        for (Event event : queue) {
-            if (event.getFinished())
+        
+        for (int i = 0; i < queue.size(); i++) {
+            if (queue.get(i).order != -1)
                 continue;
-
-            event.setFinished(true);
+            if(queue.get(i).event.getTime() < lastEvent.getTime() )
+                continue;
+            AbstractEvent event = queue.get(i).event;
             if (singletonQueue.addEvent(event)) {
-                switch (event.getEventType()) {
-                    case ARRIVAL:
-                        System.out.println(event);
-                        break;
-                    case DROPOUT:
-                        System.out.println(event);
-                        break;
-                }
-                break;
+                queue.get(i).order = indexOrder;
+                indexOrder++;
+                event.setFinished(true);
+                event.execute(SimpleQueue.getInstance());
+                return event;
             }
         }
+        return null;
+    }
+
+    public AbstractEvent getLast() {
+        Collections.sort(queue, new Comparator<OrderEvent>() {
+            @Override
+            public int compare(OrderEvent event1, OrderEvent event2) {
+                return (Integer.valueOf(event2.order)).compareTo((Integer.valueOf(event1.order)));
+            }
+        });
+
+        return queue.get(0).event;
+    }
+
+    public String toString() {
+        Collections.sort(queue, new Comparator<OrderEvent>() {
+            @Override
+            public int compare(OrderEvent event1, OrderEvent event2) {
+                return (Integer.valueOf(event1.order)).compareTo((Integer.valueOf(event2.order)));
+            }
+        });
+
+        StringBuilder stringBuilder = new StringBuilder();
+        
+        stringBuilder.append("Scheduler information")
+                .append("\nAll scheduled events. When ORDER TRIGGERED is -1, event was NOT triggered\n")
+                .append("EVENT\t").append("TIME\t").append("ORDER TRIGGERED\t").append("ORDER SCHEDULED\n");
+            
+        for (OrderEvent oEvent : queue) {
+            stringBuilder.append(oEvent);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
     }
 }
