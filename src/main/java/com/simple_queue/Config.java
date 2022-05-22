@@ -1,122 +1,66 @@
 package com.simple_queue;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 public class Config {
-    private static final String FILENAME = "./src/main/resources/model.xml";
-    private static Config instance;
-    static Document doc;
-    private static int indexSeed = 0;
-    private boolean useRandom;
-
-    private Config(boolean useRandom) {
-        this.useRandom = useRandom;
+    private final String FILENAME = "./src/main/resources/model.xml";
+     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    Document doc;
+    Config() {
         try {
-            DocumentBuilderFactory dBuilderFactory = DocumentBuilderFactory.newInstance();
-            dBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            DocumentBuilder db = dBuilderFactory.newDocumentBuilder();
+
+            // parse XML file
+            DocumentBuilder db = dbf.newDocumentBuilder();
+
             doc = db.parse(new File(FILENAME));
+
+            // optional, but recommended
+            // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            // TODO: handle exception
         }
     }
 
-    public static Config getInstance() {
-        return instance;
-    }
-    public static void init(boolean useRandom) {
-        if (instance == null)
-            instance = new Config(useRandom);
+    public double[] getSeeds() {
+        String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
+        return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
     }
 
-    public int[] getArrivalInterval() {
-        NodeList list = doc.getElementsByTagName("interval");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        String arrival = element.getElementsByTagName("arrival").item(0).getTextContent().trim();
-
-        return Arrays.stream(arrival.split(",")).mapToInt(Integer::parseInt).toArray();
-    }
-
-    public int[] getDropoutInterval() {
-        NodeList list = doc.getElementsByTagName("interval");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        String arrival = element.getElementsByTagName("dropout").item(0).getTextContent().trim();
-
-        return Arrays.stream(arrival.split(",")).mapToInt(Integer::parseInt).toArray();
-    }
-
-    public double[] getSeed() {
-        NodeList list = doc.getElementsByTagName("seed");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        String arrival = element.getTextContent().trim();
-        return Arrays.stream(arrival.split(",")).mapToDouble(Double::parseDouble).toArray();
-    }
-
-    public double getRandom() {
-        return RandomGenerator.getNextRandom();
+    public String getMode() {
+        return doc.getElementsByTagName("mode").item(0).getTextContent();
     }
 
     public int getQueueSize() {
-        NodeList list = doc.getElementsByTagName("sizeQueue");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        return Integer.parseInt(element.getTextContent().trim());
+        return Integer.parseInt(doc.getElementsByTagName("sizeQueue").item(0).getTextContent());
     }
 
-    public double nextSeed() {
-        if (useRandom)
-            return this.getRandom();
-        else {
-
-            NodeList list = doc.getElementsByTagName("seed");
-            Node node = list.item(0);
-            Element element = (Element) node;
-
-            String arrival = element.getTextContent().trim();
-            double[] seeds = Arrays.stream(arrival.split(",")).mapToDouble(Double::parseDouble).toArray();
-
-            return seeds[indexSeed++];
-        }
+    public int getServerNumber() {
+        return Integer.parseInt(doc.getElementsByTagName("serverNumber").item(0).getTextContent());
+    }
+    public double getFirstSeed() {
+        return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
     }
 
-    public boolean hasNewSeed() {
-        NodeList list = doc.getElementsByTagName("seed");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        String arrival = element.getTextContent().trim();
-        double[] seeds = Arrays.stream(arrival.split(",")).mapToDouble(Double::parseDouble).toArray();
-
-        return seeds.length != indexSeed;
+    public int getRoundNumber() {
+        return Integer.parseInt(doc.getElementsByTagName("roundNumber").item(0).getTextContent());
     }
 
-    public double firstSeed() {
+    public int[] getArrivalInterval() {
+        String interval = doc.getElementsByTagName("arrivalInterval").item(0).getTextContent();
 
-        NodeList list = doc.getElementsByTagName("firstSeed");
-        Node node = list.item(0);
-        Element element = (Element) node;
-
-        return Double.parseDouble(element.getTextContent().trim());
+        return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
     }
 
+    public int[] getDepartureInterval() {
+        String interval = doc.getElementsByTagName("departureInterval").item(0).getTextContent();
+
+        return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
+    }
 }
