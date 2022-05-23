@@ -5,15 +5,12 @@ import java.util.stream.*;
 
 public class App {
     Config config = new Config();
-    public int currentSize = 0;
-    public int maxSize = config.getQueueSize();
-    public int[] arrivalInterval = config.getArrivalInterval();
-    public int[] departureInterval = config.getDepartureInterval();
+    public int numberOfQueues = config.getNumberOfQueues();
+    public Queue[] queues = new Queue[numberOfQueues];
     public double firstSeed = config.getFirstSeed();
     public double[] seeds = config.getSeeds();
     public String mode = config.getMode();
     public int numberOfRounds = config.getRoundNumber();
-    public int serverNumber = config.getServerNumber();
 
     public int indexRound = 0;
     public int lossNumber = 0;
@@ -24,6 +21,16 @@ public class App {
     public static void main(String[] args) {
         App a = new App();
         a.initialize();
+        
+        //inicializando filas
+        if numberOfQueues > 0 {
+            queues[0] = Queue(config.getQueueSize(0), config.getArrivalInterval(), config.getDepartureInterval(0), config.getServerNumber(0))
+            if numberOfQueues > 1 {
+                for(int i = 1; i < numberOfQueues; i++) {
+                    queues[i] = Queue(config.getQueueSize(i), config.getDepartureInterval(i), config.getServerNumber(i));
+                }
+            }
+        }
 
         int indexBegin, indexEnd;
         indexBegin = 0;
