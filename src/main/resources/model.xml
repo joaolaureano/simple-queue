@@ -1,11 +1,15 @@
 <root>
-
-    <arrivalInterval>1,2</arrivalInterval>
-    <departureInterval>3,6</departureInterval>
-    <sizeQueue>3</sizeQueue>
+    <numberOfQueues>2</numberOfQueues>
+    <arrivalInterval1>2,3</arrivalInterval1>
+    <departureInterval1>2,5</departureInterval1>
+    <serverNumber1>2</serverNumber1>
+    <sizeQueue1>3</sizeQueue1>
+    <departureInterval2>3,5</departureInterval2>
+    <serverNumber2>1</serverNumber2>
+    <sizeQueue2>3</sizeQueue2>
     <firstSeed>2.000</firstSeed>
     <roundNumber>100000</roundNumber>
     <seed>0.3276,0.8851,0.1643,0.5542,0.6813,0.7221,0.9881</seed>
-    <serverNumber>1</serverNumber>
+    
     <mode>SEED</mode>
 </root>
