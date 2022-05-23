@@ -37,12 +37,16 @@ public class Config {
         return doc.getElementsByTagName("mode").item(0).getTextContent();
     }
 
-    public int getQueueSize() {
-        return Integer.parseInt(doc.getElementsByTagName("sizeQueue").item(0).getTextContent());
+    public int getNumberOfQueues() {
+        return Integer.parseInt(doc.getElementsByTagName("numberOfQueues").item(0).getTextContent());
     }
 
-    public int getServerNumber() {
-        return Integer.parseInt(doc.getElementsByTagName("serverNumber").item(0).getTextContent());
+    public int getQueueSize(int index) {
+        return Integer.parseInt(doc.getElementsByTagName("sizeQueue" + (index+1)).item(0).getTextContent());
+    }
+
+    public int getServerNumber(int index) {
+        return Integer.parseInt(doc.getElementsByTagName("serverNumber" + (index+1)).item(0).getTextContent());
     }
     public double getFirstSeed() {
         return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
@@ -53,13 +57,13 @@ public class Config {
     }
 
     public int[] getArrivalInterval() {
-        String interval = doc.getElementsByTagName("arrivalInterval").item(0).getTextContent();
+        String interval = doc.getElementsByTagName("arrivalInterval1").item(0).getTextContent();
 
         return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
     }
 
-    public int[] getDepartureInterval() {
-        String interval = doc.getElementsByTagName("departureInterval").item(0).getTextContent();
+    public int[] getDepartureInterval(int index) {
+        String interval = doc.getElementsByTagName("departureInterval" + (index+1)).item(0).getTextContent();
 
         return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
     }
