@@ -6,7 +6,7 @@ public class Queue {
     public int serverNumber;//C
 
     Queue(int maxSize, int[] arrivalInterval, int[] departureInterval, int serverNumber) {
-        //only the first queue will have arrival time
+        //only the first queue will have arrivalInterval
         this.maxSize = maxSize;
         this.arrivalInterval = arrivalInterval;
         this.departureInterval = departureInterval;
@@ -14,7 +14,7 @@ public class Queue {
     }
 
     Queue(int maxSize, int[] departureInterval, int serverNumber) {
-        //every other queue will have only departureInterval
+        //every other queue wont have arrivalInterval
         this.maxSize = maxSize;
         this.departureInterval = departureInterval;
         this.serverNumber = serverNumber;
