@@ -6,14 +6,16 @@ import java.io.IOException;
 public class RandomGenerator {
     static int a = 47057; // multiplicador
     static int m = 12613; // modulo
-    static int c = 358; // constante
     static long x0 = 46819; // semente/x0
+    static int c = 358; // constante
     // static long x0 = System.currentTimeMillis(); // semente/x0
     static double lastRandom = x0; // xi-1
+    static String allNumbers = "";
 
     static double getNextRandom() {
         double nextRandom = ((a * lastRandom + c) % m) / m;
         lastRandom = nextRandom;
+        allNumbers += "- " + nextRandom + "\n";
         return nextRandom;
     }
 

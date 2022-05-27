@@ -1,5 +1,8 @@
 package com.simple_queue;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class Queue {
   private static int _index = 0;
 
@@ -13,6 +16,8 @@ public class Queue {
   public int currentSize = 0;
   public Escalonador escalonador = Escalonador.getInstance();
 
+  public Map<Integer, Double> times = new HashMap<Integer, Double>();
+
   public Queue(int[] arrivalInterval, int[] departureInterval, int serverNumber, int maxSize, Queue destiny) {
     this.arrivalInterval = arrivalInterval;
     this.departureInterval = departureInterval;
@@ -23,7 +28,7 @@ public class Queue {
   }
 
   public void chegada(boolean newEvent) throws Exception {
-    this.escalonador.calculateTime(index, currentSize);
+    this.escalonador.calculateTime();
     if (this.maxSize < 0 || this.currentSize < this.maxSize) {
       this.currentSize++;
       if (this.currentSize <= this.serverNumber)
@@ -36,7 +41,7 @@ public class Queue {
   }
 
   public void saida() throws Exception {
-    this.escalonador.calculateTime(index, currentSize);
+    this.escalonador.calculateTime();
     this.currentSize--;
     if (this.currentSize >= this.serverNumber)
       this.escalonador.agendaSaida(this);

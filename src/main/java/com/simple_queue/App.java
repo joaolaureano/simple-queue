@@ -1,19 +1,17 @@
 package com.simple_queue;
 
 public class App {
-
     public static void main(String[] args) {
-
         int indexBegin, indexEnd;
         indexBegin = 0;
-
-        Queue[] queues = new Config().getQueues();
 
         Escalonador escalonador = Escalonador.getInstance();
 
         escalonador.seeds = new Config().getSeeds();
         escalonador.firstSeed = new Config().getFirstSeed();
         indexEnd = escalonador.seeds.length - 1;
+
+        Queue[] queues = new Config().getQueues();
 
         try {
             escalonador.initialize(queues);
@@ -26,8 +24,9 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String fileName = "result.txt";
-        System.out.println(fileName);
+
+        String fileName = "result_.csv";
         new Output().save(fileName, (new Output()).format());
     }
+
 }

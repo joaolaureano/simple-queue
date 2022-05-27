@@ -8,39 +8,34 @@ public class Escalonador {
     private static Escalonador single_instance = new Escalonador();
     public ArrayList<Event>[] scheduledEvents;
     public int indexRound = 0;
-    public double[][] clock;
     int indexSeed = 0;
     public double[] seeds;
     public double firstSeed;
-    private Queue[] queues;
+    public Queue[] queues;
+
+    public double lastEvt = 0.0D;
+    public double currEvtTime = 0.0D;
+
+    public static void destroy() {
+        single_instance = null;
+    }
 
     public static Escalonador getInstance() {
+        if (single_instance == null)
+            single_instance = new Escalonador();
         return single_instance;
     }
 
-    public void calculateTime(int queueIndex, int queueSize) {
-
-        double nextTime = nextTime();
-        double lastTime = lastTime();
-
-        double delta = nextTime - lastTime;
-        clock[queueIndex][queueSize] += delta;
-    }
-
-    public double nextTime() {
-        for (int queueIndex = 0; queueIndex < queues.length; queueIndex++)
-            for (int i = 0; i < scheduledEvents[queueIndex].size(); i++)
-                if (scheduledEvents[queueIndex].get(i).order == indexRound - 1)
-                    return this.scheduledEvents[queueIndex].get(i).time;
-        return 0;
-    }
-
-    public double lastTime() {
-        for (int queueIndex = 0; queueIndex < queues.length; queueIndex++)
-            for (int i = 0; i < scheduledEvents[queueIndex].size(); i++)
-                if (scheduledEvents[queueIndex].get(i).order == indexRound - 2)
-                    return this.scheduledEvents[queueIndex].get(i).time;
-        return 0;
+    public void calculateTime() {
+        for (Queue queue : this.queues) {
+            int currentSize = queue.currentSize;
+            double subtotal = 0;
+            if (queue.times.containsKey(currentSize))
+                subtotal = queue.times.get(currentSize);
+            subtotal += this.currEvtTime - this.lastEvt;
+            queue.times.put(currentSize, subtotal);
+        }
+        this.lastEvt = this.currEvtTime;
     }
 
     public double calculate(int[] interval, double seed) {
@@ -57,7 +52,7 @@ public class Escalonador {
 
     public Event agendaChegada(Queue queue, double nextSeed) {
 
-        double nextTime = nextTime() + calculate(queue.arrivalInterval, nextSeed);
+        double nextTime = this.currEvtTime + calculate(queue.arrivalInterval, nextSeed);
         EventType type = EventType.ARRIVAL;
         Event event = new Event(type, nextTime, queue, queue.destiny);
         this.scheduledEvents[queue.index].add(event);
@@ -65,7 +60,7 @@ public class Escalonador {
     }
 
     public Event agendaSaida(Queue queue, double nextSeed) {
-        double nextTime = nextTime() + calculate(queue.departureInterval, nextSeed);
+        double nextTime = this.currEvtTime + calculate(queue.departureInterval, nextSeed);
         EventType type = EventType.DEPARTURE;
         Event event = new Event(type, nextTime, queue, queue.destiny);
         this.scheduledEvents[queue.index].add(event);
@@ -106,6 +101,8 @@ public class Escalonador {
         scheduledEvents[indexes[0]].get(indexes[1]).order = indexRound++;
 
         Event selected = scheduledEvents[indexes[0]].get(indexes[1]);
+        this.lastEvt = this.currEvtTime;
+        this.currEvtTime = selected.time;
 
         switch (selected.type) {
             case FIRST_ARRIVAL:
@@ -120,18 +117,17 @@ public class Escalonador {
         }
     }
 
-    public double getTimeTotal(int queueIndex) {
-        return DoubleStream.of(clock[queueIndex]).sum();
-    }
-
     public double[][] getProbabilities() {
-        double[][] prob = new double[clock.length][];
-        for (int i = 0; i < clock.length; i++)
-            prob[i] = new double[clock[i].length];
-        for (int queue = 0; queue < clock.length; queue++) {
-            double total = getTimeTotal(queue);
-            for (int i = 0; i < prob[queue].length; i++)
-                prob[queue][i] = (clock[queue][i] / total) * 100;
+        double[][] prob = new double[this.queues.length][];
+
+        for (int queueIdx = 0; queueIdx < this.queues.length; queueIdx++) {
+            prob[queueIdx] = new double[this.queues[queueIdx].times.size()];
+            double total = this.currEvtTime;
+            for (int i = 0; i < prob[queueIdx].length; i++) {
+                double subtotal = this.queues[queueIdx].times.get(i).doubleValue();
+
+                prob[queueIdx][i] = (subtotal) / total * 100;
+            }
         }
 
         return prob;
@@ -144,10 +140,8 @@ public class Escalonador {
     public void initialize(Queue[] queues) throws Exception {
         this.queues = queues;
         this.scheduledEvents = new ArrayList[queues.length];
-        this.clock = new double[queues.length][];
         for (int i = 0; i < queues.length; i++) {
             this.scheduledEvents[i] = new ArrayList<Event>();
-            this.clock[i] = new double[queues[i].maxSize + 1];
 
         }
         this.agendaChegadaInicial(this.queues[0]);

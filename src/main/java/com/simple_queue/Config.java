@@ -16,7 +16,6 @@ public class Config {
 
     Config() {
         try {
-
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             doc = db.parse(new File(FILENAME));
@@ -27,13 +26,35 @@ public class Config {
     }
 
     public double[] getSeeds() {
-        String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
-        return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
+        if (getMode().equals("SEED")) {
+            String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
+            return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
+        } else if (getMode().equals("RANDOM")) {
+            return generateSeeds();
+        } else if (getMode().equals("PRINT_RANDOM")) {
+            RandomGenerator.printRandom(getRoundNumber());
+            System.exit(0);
+            return null;
+        } else {
+            throw new Error("Invalid mode");
+        }
     }
 
-    // public String getMode() {
-    // return doc.getElementsByTagName("mode").item(0).getTextContent();
-    // }
+    public String getMode() {
+        return doc.getElementsByTagName("mode").item(0).getTextContent();
+    }
+
+    public int getRoundNumber() {
+        return Integer.parseInt(doc.getElementsByTagName("roundNumber").item(0).getTextContent());
+    }
+
+    public double[] generateSeeds() {
+        double[] seeds = new double[getRoundNumber()];
+        for (int i = 0; i < seeds.length; i++)
+            seeds[i] = RandomGenerator.getNextRandom();
+
+        return seeds;
+    }
 
     public double getFirstSeed() {
         return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
