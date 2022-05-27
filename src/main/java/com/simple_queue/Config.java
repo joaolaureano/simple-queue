@@ -1,7 +1,8 @@
 package com.simple_queue;
 
 import org.w3c.dom.Document;
-
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -10,21 +11,18 @@ import java.util.Arrays;
 
 public class Config {
     private final String FILENAME = "./src/main/resources/model.xml";
-     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     Document doc;
+
     Config() {
         try {
 
-            // parse XML file
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             doc = db.parse(new File(FILENAME));
-
-            // optional, but recommended
-            // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
             doc.getDocumentElement().normalize();
         } catch (Exception e) {
-            // TODO: handle exception
+            e.printStackTrace();
         }
     }
 
@@ -33,34 +31,47 @@ public class Config {
         return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
     }
 
-    public String getMode() {
-        return doc.getElementsByTagName("mode").item(0).getTextContent();
-    }
+    // public String getMode() {
+    // return doc.getElementsByTagName("mode").item(0).getTextContent();
+    // }
 
-    public int getQueueSize() {
-        return Integer.parseInt(doc.getElementsByTagName("sizeQueue").item(0).getTextContent());
-    }
-
-    public int getServerNumber() {
-        return Integer.parseInt(doc.getElementsByTagName("serverNumber").item(0).getTextContent());
-    }
     public double getFirstSeed() {
         return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
     }
 
-    public int getRoundNumber() {
-        return Integer.parseInt(doc.getElementsByTagName("roundNumber").item(0).getTextContent());
+    public Queue[] getQueues() {
+        NodeList queuesNode = ((Element) doc.getElementsByTagName("queues").item(0)).getElementsByTagName("queue");
+        Queue[] queues = new Queue[queuesNode.getLength()];
+        for (int idxQueue = 0; idxQueue < queuesNode.getLength(); idxQueue++) {
+            Element el = (Element) queuesNode.item(idxQueue);
+            int[] arrivalInterval = Arrays
+                    .stream(el.getElementsByTagName("arrivalInterval").item(0).getTextContent().split(","))
+                    .mapToInt(Integer::parseInt).toArray();
+            int[] departureInterval = Arrays
+                    .stream(el.getElementsByTagName("departureInterval").item(0).getTextContent().split(","))
+                    .mapToInt(Integer::parseInt).toArray();
+            int sizeQueue = Integer.parseInt(el.getElementsByTagName("sizeQueue").item(0).getTextContent());
+            int serverNumber = Integer.parseInt(el.getElementsByTagName("serverNumber").item(0).getTextContent());
+            queues[idxQueue] = new Queue(arrivalInterval, departureInterval, serverNumber, sizeQueue, null);
+        }
+        queues = this.setDestiny(queues);
+        return queues;
     }
 
-    public int[] getArrivalInterval() {
-        String interval = doc.getElementsByTagName("arrivalInterval").item(0).getTextContent();
+    private Queue[] setDestiny(Queue[] queues) {
+        NodeList connectionList = ((Element) doc.getElementsByTagName("network").item(0))
+                .getElementsByTagName("connection");
+        if (connectionList == null) {
+            return queues;
+        }
+        for (int idxQueue = 0; idxQueue < connectionList.getLength(); idxQueue++) {
+            Element el = (Element) connectionList.item(idxQueue);
+            int[] idxConnection = Arrays.stream(el.getTextContent().split(","))
+                    .mapToInt(Integer::parseInt).toArray();
+            queues[idxConnection[0]].setDestiny(queues[idxConnection[1]]);
+        }
 
-        return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
+        return queues;
     }
 
-    public int[] getDepartureInterval() {
-        String interval = doc.getElementsByTagName("departureInterval").item(0).getTextContent();
-
-        return Arrays.stream(interval.split(",")).mapToInt(Integer::parseInt).toArray();
-    }
 }

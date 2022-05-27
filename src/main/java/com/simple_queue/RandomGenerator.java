@@ -30,7 +30,6 @@ public class RandomGenerator {
             fw.write(allNumbers);
             fw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
