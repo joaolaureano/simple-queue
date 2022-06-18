@@ -4,16 +4,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class Escalonador {
 
     private static Escalonador single_instance = new Escalonador();
 
     public double[] seeds;
-    public double firstSeed;
     int indexSeed = 0;
 
     public ArrayList<Event> scheduledEvents;
+
+    public Map<Integer, Double> initials = new HashMap<>();
 
     public int indexRound = 0;
 
@@ -29,7 +31,12 @@ public class Escalonador {
     public void initialize(Queue[] queues) throws Exception {
         this.queues = queues;
         this.scheduledEvents = new ArrayList<Event>();
-        this.agendamentoInicial(this.queues[0], firstSeed);
+        for (Entry<Integer, Double> entry : initials.entrySet()) {
+            Queue queue = queues[entry.getKey()];
+            Event event = new Event(EventType.ARRIVAL, entry.getValue(), queue, null);
+            this.scheduledEvents.add(event);
+        }
+        Collections.sort(this.scheduledEvents);
     }
 
     public void round() throws Exception {
@@ -88,12 +95,8 @@ public class Escalonador {
         return event;
     }
 
-    public Event agendamentoInicial(Queue queue, double nextSeed) {
-        EventType type = EventType.ARRIVAL;
-        Event event = new Event(type, nextSeed, queue, null);
-        this.scheduledEvents.add(event);
-        Collections.sort(this.scheduledEvents);
-        return event;
+    public void agendamentoInicial(int index, double nextSeed) {
+        this.initials.put(index, Double.valueOf(nextSeed));
     }
 
     public double nextSeed() throws EndOfSeedsException {
@@ -125,4 +128,5 @@ public class Escalonador {
 
         return probabilities;
     }
+
 }

@@ -12,7 +12,6 @@ public class App {
         Escalonador escalonador = Escalonador.getInstance();
 
         escalonador.seeds = new Config().getSeeds();
-        escalonador.firstSeed = new Config().getFirstSeed();
         indexEnd = escalonador.seeds.length - 1;
         try {
             escalonador.initialize(queues);

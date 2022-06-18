@@ -5,3 +5,7 @@ STATE	 TIME	PROBABILITY
 1	1.8851	22.6419%
 2	1.7851	21.4408%
 3	2.6555	31.8952%
+
+Number of losses: 1
+
+

@@ -16,7 +16,6 @@ public class Config {
 
     Config() {
         try {
-
             DocumentBuilder db = dbf.newDocumentBuilder();
 
             doc = db.parse(new File(FILENAME));
@@ -27,13 +26,35 @@ public class Config {
     }
 
     public double[] getSeeds() {
-        String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
-        return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
+        if (getMode().equals("SEED")) {
+            String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
+            return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
+        } else if (getMode().equals("RANDOM")) {
+            return generateSeeds();
+        } else if (getMode().equals("PRINT_RANDOM")) {
+            RandomGenerator.printRandom(getRoundNumber());
+            System.exit(0);
+            return null;
+        } else {
+            throw new Error("Invalid mode");
+        }
     }
 
-    // public String getMode() {
-    // return doc.getElementsByTagName("mode").item(0).getTextContent();
-    // }
+    public int getRoundNumber() {
+        return Integer.parseInt(doc.getElementsByTagName("roundNumber").item(0).getTextContent());
+    }
+
+    public double[] generateSeeds() {
+        double[] seeds = new double[getRoundNumber()];
+        for (int i = 0; i < seeds.length; i++)
+            seeds[i] = RandomGenerator.getNextRandom();
+
+        return seeds;
+    }
+
+    public String getMode() {
+        return doc.getElementsByTagName("mode").item(0).getTextContent();
+    }
 
     public double getFirstSeed() {
         return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
@@ -55,15 +76,16 @@ public class Config {
             queues[idxQueue] = new Queue(arrivalInterval, departureInterval, serverNumber, sizeQueue);
         }
         queues = this.setDestiny(queues);
+        setInitials();
         return queues;
     }
 
     private Queue[] setDestiny(Queue[] queues) {
-        NodeList connectionList = ((Element) doc.getElementsByTagName("network").item(0))
-                .getElementsByTagName("connection");
-        if (connectionList == null) {
+        if (!existsNode("network")) {
             return queues;
         }
+        NodeList connectionList = ((Element) doc.getElementsByTagName("network").item(0))
+                .getElementsByTagName("connection");
         for (int idxConnection = 0; idxConnection < connectionList.getLength(); idxConnection++) {
             Element el = (Element) connectionList.item(idxConnection);
             double[] connectionInfo = Arrays.stream(el.getTextContent().split(","))
@@ -79,4 +101,24 @@ public class Config {
         return queues;
     }
 
+    private void setInitials() {
+        if (!existsNode("arrivals")) {
+            return;
+        }
+        NodeList initialsList = ((Element) doc.getElementsByTagName("arrivals").item(0))
+                .getElementsByTagName("arrival");
+        for (int idxInitial = 0; idxInitial < initialsList.getLength(); idxInitial++) {
+            Element el = (Element) initialsList.item(idxInitial);
+            double[] initialInfo = Arrays.stream(el.getTextContent().split(","))
+                    .mapToDouble(Double::parseDouble).toArray();
+
+            int idxQueue = (int) initialInfo[0];
+            double seed = (double) initialInfo[1];
+            Escalonador.getInstance().agendamentoInicial(idxQueue, seed);
+        }
+    }
+
+    private boolean existsNode(String nodeName) {
+        return doc.getElementsByTagName(nodeName).getLength() > 0;
+    }
 }
