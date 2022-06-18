@@ -44,15 +44,15 @@ public class Config {
         Queue[] queues = new Queue[queuesNode.getLength()];
         for (int idxQueue = 0; idxQueue < queuesNode.getLength(); idxQueue++) {
             Element el = (Element) queuesNode.item(idxQueue);
-            int[] arrivalInterval = Arrays
+            double[] arrivalInterval = Arrays
                     .stream(el.getElementsByTagName("arrivalInterval").item(0).getTextContent().split(","))
-                    .mapToInt(Integer::parseInt).toArray();
-            int[] departureInterval = Arrays
+                    .mapToDouble(Double::parseDouble).toArray();
+            double[] departureInterval = Arrays
                     .stream(el.getElementsByTagName("departureInterval").item(0).getTextContent().split(","))
-                    .mapToInt(Integer::parseInt).toArray();
+                    .mapToDouble(Double::parseDouble).toArray();
             int sizeQueue = Integer.parseInt(el.getElementsByTagName("sizeQueue").item(0).getTextContent());
             int serverNumber = Integer.parseInt(el.getElementsByTagName("serverNumber").item(0).getTextContent());
-            queues[idxQueue] = new Queue(arrivalInterval, departureInterval, serverNumber, sizeQueue, null);
+            queues[idxQueue] = new Queue(arrivalInterval, departureInterval, serverNumber, sizeQueue);
         }
         queues = this.setDestiny(queues);
         return queues;
@@ -64,11 +64,16 @@ public class Config {
         if (connectionList == null) {
             return queues;
         }
-        for (int idxQueue = 0; idxQueue < connectionList.getLength(); idxQueue++) {
-            Element el = (Element) connectionList.item(idxQueue);
-            int[] idxConnection = Arrays.stream(el.getTextContent().split(","))
-                    .mapToInt(Integer::parseInt).toArray();
-            queues[idxConnection[0]].setDestiny(queues[idxConnection[1]]);
+        for (int idxConnection = 0; idxConnection < connectionList.getLength(); idxConnection++) {
+            Element el = (Element) connectionList.item(idxConnection);
+            double[] connectionInfo = Arrays.stream(el.getTextContent().split(","))
+                    .mapToDouble(Double::parseDouble).toArray();
+
+            int idxQueue = (int) connectionInfo[0];
+            int idxDestiny = (int) connectionInfo[1];
+            double probability = connectionInfo[2];
+
+            queues[idxQueue].addDestiny(queues[idxDestiny], probability);
         }
 
         return queues;

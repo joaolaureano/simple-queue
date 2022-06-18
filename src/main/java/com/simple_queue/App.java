@@ -14,7 +14,6 @@ public class App {
         escalonador.seeds = new Config().getSeeds();
         escalonador.firstSeed = new Config().getFirstSeed();
         indexEnd = escalonador.seeds.length - 1;
-
         try {
             escalonador.initialize(queues);
             while (indexBegin < indexEnd) {
@@ -24,7 +23,7 @@ public class App {
         } catch (EndOfSeedsException ese) {
             System.out.println("End of seeds");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("End of seeds");
         }
         String fileName = "result.txt";
         System.out.println(fileName);
