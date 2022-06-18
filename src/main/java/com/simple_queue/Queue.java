@@ -32,7 +32,7 @@ public class Queue {
   }
 
   public void chegada(boolean newEvent) throws Exception {
-    this.escalonador.calculateTime();
+    Clock.getInstance().calculateTime();
     if (this.maxSize < 0 || this.currentSize < this.maxSize) {
       this.currentSize++;
       if (this.currentSize <= this.serverNumber) {
@@ -49,7 +49,7 @@ public class Queue {
   }
 
   public void saida() throws Exception {
-    this.escalonador.calculateTime();
+    Clock.getInstance().calculateTime();
     this.currentSize--;
     if (this.currentSize >= this.serverNumber) {
       Escalonador r = this.escalonador;

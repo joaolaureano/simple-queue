@@ -10,6 +10,8 @@ public class Escalonador {
 
     private static Escalonador single_instance = new Escalonador();
 
+    public Clock clock = Clock.getInstance();
+
     public double[] seeds;
     int indexSeed = 0;
 
@@ -22,10 +24,23 @@ public class Escalonador {
     public Queue[] queues;
 
     private double lastEventTime = 0;
+
     private double time = 0;
 
     public static Escalonador getInstance() {
         return single_instance;
+    }
+
+    public double getLastEventTime() {
+        return lastEventTime;
+    }
+
+    public void setLastEventTime(double lastEventTime) {
+        this.lastEventTime = lastEventTime;
+    }
+
+    public double getTime() {
+        return time;
     }
 
     public void initialize(Queue[] queues) throws Exception {
@@ -56,21 +71,6 @@ public class Escalonador {
                     nextEvent.destiny.chegada(false);
                 return;
         }
-    }
-
-    public void calculateTime() {
-        for (int i = 0; i < this.queues.length; i++) {
-            Queue queue = this.queues[i];
-            int currentSize = queue.currentSize;
-            double total;
-            if (queue.probabilities.get(currentSize) == null) {
-                total = 0;
-            } else
-                total = queue.probabilities.get(currentSize).doubleValue();
-            total = total + (this.time - this.lastEventTime);
-            queue.probabilities.put(currentSize, Double.valueOf(total));
-        }
-        this.lastEventTime = this.time;
     }
 
     public double calculate(double[] interval, double seed) {
@@ -105,28 +105,6 @@ public class Escalonador {
 
     public Event extractLastEvent() {
         return this.scheduledEvents.remove(0);
-    }
-
-    public double getTotalTime(Double[] times) {
-        double total = 0;
-        for (int i = 0; i < times.length; i++) {
-            total += times[i];
-        }
-        return total;
-    }
-
-    public double[][] getProbabilities() {
-        double[][] probabilities = new double[this.queues.length][];
-        for (int i = 0; i < this.queues.length; i++) {
-            Queue queue = this.queues[i];
-            double total = this.time;
-            probabilities[i] = new double[queue.probabilities.size()];
-            for (int j = 0; j < queue.probabilities.size(); j++) {
-                probabilities[i][j] = queue.probabilities.get(j) / total;
-            }
-        }
-
-        return probabilities;
     }
 
 }

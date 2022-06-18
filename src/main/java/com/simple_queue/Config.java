@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.Arrays;
 
 public class Config {
-    private final String FILENAME = "./src/main/resources/model.xml";
+    private final String FILENAME = "./src/main/resources/model_3.xml";
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     Document doc;
 

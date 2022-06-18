@@ -4,7 +4,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Map;
 
 public class Output {
 
@@ -13,7 +12,7 @@ public class Output {
         NumberFormat nFormat = new DecimalFormat("#0.0000");
         sBuilder.append("Clock information\n");
 
-        double[][] probabilities = Escalonador.getInstance().getProbabilities();
+        double[][] probabilities = Clock.getInstance().getProbabilities();
         // iterate over each probabilities for every queue array and iterate oveDr queue
         // array
         for (int i = 0; i < probabilities.length; i++) {
