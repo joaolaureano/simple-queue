@@ -4,7 +4,6 @@
             <arrivalInterval>1,4</arrivalInterval>
             <departureInterval>1,1.5</departureInterval>
             <serverNumber>1</serverNumber>
-            <sizeQueue>4</sizeQueue>
         </queue>
         <queue>
             <arrivalInterval>0,0</arrivalInterval>

@@ -12,9 +12,6 @@ public class Escalonador {
 
     public Clock clock = Clock.getInstance();
 
-    public double[] seeds;
-    int indexSeed = 0;
-
     public ArrayList<Event> scheduledEvents;
 
     public Map<Integer, Double> initials = new HashMap<>();
@@ -97,10 +94,6 @@ public class Escalonador {
 
     public void agendamentoInicial(int index, double nextSeed) {
         this.initials.put(index, Double.valueOf(nextSeed));
-    }
-
-    public double nextSeed() throws EndOfSeedsException {
-        return seeds[indexSeed++];
     }
 
     public Event extractLastEvent() {

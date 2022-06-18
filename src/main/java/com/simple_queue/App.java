@@ -1,26 +1,20 @@
 package com.simple_queue;
 
+import com.simple_queue.NumberGenerator.NumberGenerator;
+
 public class App {
 
     public static void main(String[] args) {
 
-        int indexBegin, indexEnd;
-        indexBegin = 0;
-
         Queue[] queues = new Config().getQueues();
-
+        new Config().initializeGenerator();
         Escalonador escalonador = Escalonador.getInstance();
 
-        escalonador.seeds = new Config().getSeeds();
-        indexEnd = escalonador.seeds.length - 1;
         try {
             escalonador.initialize(queues);
-            while (indexBegin < indexEnd) {
+            while (NumberGenerator.getInstance().hasSeed()) {
                 escalonador.round();
-                indexBegin++;
             }
-        } catch (EndOfSeedsException ese) {
-            System.out.println("End of seeds");
         } catch (Exception e) {
             System.out.println("End of seeds");
         }

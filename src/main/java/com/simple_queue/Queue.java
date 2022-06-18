@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.simple_queue.NumberGenerator.NumberGenerator;
+
 public class Queue {
   private static int _index = 0;
   public int index = _index++;
@@ -37,14 +39,14 @@ public class Queue {
       this.currentSize++;
       if (this.currentSize <= this.serverNumber) {
         Escalonador r = this.escalonador;
-        r.agendaSaida(this, getDestiny(), r.nextSeed());
+        r.agendaSaida(this, getDestiny(), NumberGenerator.getInstance().getNextSeed());
       }
     } else {
       this.lossNumber++;
     }
     if (newEvent) {
       Escalonador r = this.escalonador;
-      r.agendaChegada(this, r.nextSeed());
+      r.agendaChegada(this, NumberGenerator.getInstance().getNextSeed());
     }
   }
 
@@ -53,7 +55,7 @@ public class Queue {
     this.currentSize--;
     if (this.currentSize >= this.serverNumber) {
       Escalonador r = this.escalonador;
-      r.agendaSaida(this, getDestiny(), r.nextSeed());
+      r.agendaSaida(this, getDestiny(), NumberGenerator.getInstance().getNextSeed());
     }
   }
 
@@ -67,7 +69,7 @@ public class Queue {
       return null;
     if (this.destines.size() == 1 && this.destines.get(0).probability >= 1)
       return this.destines.get(0).queue;
-    double indice_tmp = Escalonador.getInstance().nextSeed();
+    double indice_tmp = NumberGenerator.getInstance().getNextSeed();
     for (QueueProbability queueProbability : this.destines) {
       if (indice_tmp <= queueProbability.probability)
         return queueProbability.queue;

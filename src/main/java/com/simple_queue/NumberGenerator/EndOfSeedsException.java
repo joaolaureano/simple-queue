@@ -1,4 +1,4 @@
-package com.simple_queue;
+package com.simple_queue.NumberGenerator;
 
 /**
  * My custom exception class.

@@ -1,4 +1,4 @@
-package com.simple_queue;
+package com.simple_queue.NumberGenerator;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,7 +17,7 @@ public class RandomGenerator {
         return nextRandom;
     }
 
-    static void printRandom(int number) {
+    public static void printRandom(int number) {
         String allNumbers = "rndnumbers:\n";
         while (number > 0) {
             allNumbers += "- " + getNextRandom();

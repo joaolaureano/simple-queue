@@ -4,13 +4,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.simple_queue.NumberGenerator.NumberGenerator;
+import com.simple_queue.NumberGenerator.RandomGenerator;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.Arrays;
 
 public class Config {
-    private final String FILENAME = "./src/main/resources/model_3.xml";
+    private final String FILENAME = "./src/main/resources/model_1.xml";
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     Document doc;
 
@@ -25,16 +28,17 @@ public class Config {
         }
     }
 
-    public double[] getSeeds() {
+    public void initializeGenerator() {
         if (getMode().equals("SEED")) {
-            String seeds = doc.getElementsByTagName("seed").item(0).getTextContent();
-            return Arrays.stream(seeds.split(",")).mapToDouble(Double::parseDouble).toArray();
+            String seedsString = doc.getElementsByTagName("seed").item(0).getTextContent();
+            double[] seedsValues = Arrays.stream(seedsString.split(",")).mapToDouble(Double::parseDouble).toArray();
+            NumberGenerator.instantiateSeedsGenerator(seedsValues);
+
         } else if (getMode().equals("RANDOM")) {
-            return generateSeeds();
+            NumberGenerator.instantiateRandomGenerator(getRoundNumber());
         } else if (getMode().equals("PRINT_RANDOM")) {
             RandomGenerator.printRandom(getRoundNumber());
             System.exit(0);
-            return null;
         } else {
             throw new Error("Invalid mode");
         }
@@ -44,20 +48,8 @@ public class Config {
         return Integer.parseInt(doc.getElementsByTagName("roundNumber").item(0).getTextContent());
     }
 
-    public double[] generateSeeds() {
-        double[] seeds = new double[getRoundNumber()];
-        for (int i = 0; i < seeds.length; i++)
-            seeds[i] = RandomGenerator.getNextRandom();
-
-        return seeds;
-    }
-
     public String getMode() {
         return doc.getElementsByTagName("mode").item(0).getTextContent();
-    }
-
-    public double getFirstSeed() {
-        return Double.parseDouble(doc.getElementsByTagName("firstSeed").item(0).getTextContent());
     }
 
     public Queue[] getQueues() {
@@ -71,7 +63,10 @@ public class Config {
             double[] departureInterval = Arrays
                     .stream(el.getElementsByTagName("departureInterval").item(0).getTextContent().split(","))
                     .mapToDouble(Double::parseDouble).toArray();
-            int sizeQueue = Integer.parseInt(el.getElementsByTagName("sizeQueue").item(0).getTextContent());
+            int sizeQueue = Integer.MAX_VALUE;
+            if (el.getElementsByTagName("sizeQueue").getLength() > 0)
+                sizeQueue = Integer.parseInt(el.getElementsByTagName("sizeQueue").item(0).getTextContent());
+
             int serverNumber = Integer.parseInt(el.getElementsByTagName("serverNumber").item(0).getTextContent());
             queues[idxQueue] = new Queue(arrivalInterval, departureInterval, serverNumber, sizeQueue);
         }
