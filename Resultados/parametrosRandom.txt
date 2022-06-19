@@ -1,0 +1,4 @@
+a = 47057; // multiplicador
+m = 12613; // modulo
+c = 358; // constante
+x0 = 46819; // semente/x0

@@ -19,7 +19,6 @@ public class App {
             System.out.println("End of seeds");
         }
         String fileName = "result.txt";
-        System.out.println(fileName);
         new Output().save(fileName, (new Output()).format());
     }
 }
