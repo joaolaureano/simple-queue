@@ -5,8 +5,8 @@
 
 This repository is part of a personal archive of projects developed during
 university (college). The original submission is preserved under the
-[`original`](../../releases/tag/original) tag; this version (tag `bugfix`,
-and the default branch) fixes the bugs found in it — see the
+[`V1`](../../releases/tag/V1) tag; the default branch (`master`) fixes the
+bugs found in it — see the
 [changelog](#correções-aplicadas--fixes-applied) below.
 
 ---
@@ -25,7 +25,7 @@ na fila).
 
 Esta versão corrige bugs identificados em uma revisão de código feita bem
 depois da entrega original (ver [changelog](#correções-aplicadas--fixes-applied)).
-A submissão original, sem essas correções, foi preservada na tag `original`,
+A submissão original, sem essas correções, foi preservada na tag `V1`,
 como registro histórico.
 
 ### Como funciona
@@ -100,7 +100,7 @@ não são lidos pelo código, que lê somente `model.xml`).
 
 ### Correções aplicadas / Fixes applied
 
-Em relação à versão original (tag `original`), esta versão corrige:
+Em relação à versão original (tag `V1`), esta versão corrige:
 
 1. **Gerador de números aleatórios incorreto**
    (`NumberGenerator/RandomGenerator.java`): o estado do LCG era realimentado
@@ -141,7 +141,7 @@ to a full queue).
 This version fixes bugs found during a code review done well after the
 original submission (see the [changelog](#correções-aplicadas--fixes-applied)
 above). The original, uncorrected submission was preserved under the
-`original` tag as a historical record.
+`V1` tag as a historical record.
 
 ### How it works
 
@@ -214,7 +214,7 @@ are not read by the code, which only reads `model.xml`).
 
 ### Fixes applied
 
-Compared to the original version (tag `original`), this version fixes:
+Compared to the original version (tag `V1`), this version fixes:
 
 1. **Incorrect random number generator**
    (`NumberGenerator/RandomGenerator.java`): the LCG's state used to be fed
