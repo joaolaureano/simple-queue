@@ -6,14 +6,22 @@ public class App {
 
     public static void main(String[] args) {
 
-        Queue[] queues = new Config().getQueues();
-        new Config().initializeGenerator();
+        Config config = new Config();
+        Queue[] queues = config.getQueues();
+        config.initializeGenerator();
         Escalonador escalonador = Escalonador.getInstance();
 
         try {
             escalonador.initialize(queues);
-            while (NumberGenerator.getInstance().hasSeed()) {
-                escalonador.round();
+            if (config.getMode().equals("RANDOM")) {
+                int roundNumber = config.getRoundNumber();
+                while (escalonador.indexRound < roundNumber) {
+                    escalonador.round();
+                }
+            } else {
+                while (NumberGenerator.getInstance().hasSeed()) {
+                    escalonador.round();
+                }
             }
         } catch (Exception e) {
             System.out.println("End of seeds");

@@ -9,12 +9,11 @@ public class RandomGenerator {
     static int c = 358; // constante
     static long x0 = 46819; // semente/x0
     // static long x0 = System.currentTimeMillis(); // semente/x0
-    static double lastRandom = x0; // xi-1
+    static long lastX = x0; // xi-1, mantido como inteiro entre chamadas
 
     static double getNextRandom() {
-        double nextRandom = ((a * lastRandom + c) % m) / m;
-        lastRandom = nextRandom;
-        return nextRandom;
+        lastX = (a * lastX + c) % m;
+        return lastX / (double) m;
     }
 
     public static void printRandom(int number) {

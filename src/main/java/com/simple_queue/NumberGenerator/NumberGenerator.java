@@ -17,12 +17,12 @@ public class NumberGenerator {
         return instance;
     }
 
-    public static NumberGenerator instantiateRandomGenerator(int maxRound) {
+    public static NumberGenerator instantiateRandomGenerator() {
         if (instance != null) {
             return instance;
         }
         instance = new NumberGenerator();
-        instance.generator = new Random(maxRound);
+        instance.generator = new Random();
         return instance;
     }
 

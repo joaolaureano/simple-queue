@@ -20,7 +20,6 @@ public class Event implements Comparable<Event> {
         this.time = time;
         this.origin = origin;
         this.destiny = destiny;
-        this.index = _index++;
     }
 
     public int compareTo(Event other) {

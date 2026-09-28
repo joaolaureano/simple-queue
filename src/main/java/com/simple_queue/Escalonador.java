@@ -54,6 +54,7 @@ public class Escalonador {
     public void round() throws Exception {
 
         Event nextEvent = this.extractLastEvent();
+        this.indexRound++;
 
         this.lastEventTime = this.time;
         this.time = nextEvent.time;

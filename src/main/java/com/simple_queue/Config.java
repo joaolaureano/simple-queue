@@ -9,19 +9,19 @@ import com.simple_queue.NumberGenerator.RandomGenerator;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import java.io.InputStream;
 import java.util.Arrays;
 
 public class Config {
-    private final String FILENAME = "./src/main/resources/model.xml";
+    private final String RESOURCE_NAME = "/model.xml";
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     Document doc;
 
     Config() {
-        try {
+        try (InputStream in = Config.class.getResourceAsStream(RESOURCE_NAME)) {
             DocumentBuilder db = dbf.newDocumentBuilder();
 
-            doc = db.parse(new File(FILENAME));
+            doc = db.parse(in);
             doc.getDocumentElement().normalize();
         } catch (Exception e) {
             e.printStackTrace();
@@ -35,7 +35,7 @@ public class Config {
             NumberGenerator.instantiateSeedsGenerator(seedsValues);
 
         } else if (getMode().equals("RANDOM")) {
-            NumberGenerator.instantiateRandomGenerator(getRoundNumber());
+            NumberGenerator.instantiateRandomGenerator();
         } else if (getMode().equals("PRINT_RANDOM")) {
             RandomGenerator.printRandom(getRoundNumber());
             System.exit(0);

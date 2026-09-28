@@ -4,8 +4,10 @@
 > Discrete-event simulator for queueing networks (M/M/c) — a college project.
 
 This repository is part of a personal archive of projects developed during
-university (college). It is kept close to its original form on purpose — see
-the notes below.
+university (college). The original submission is preserved under the
+[`original`](../../releases/tag/original) tag; this version (tag `bugfix`,
+and the default branch) fixes the bugs found in it — see the
+[changelog](#correções-aplicadas--fixes-applied) below.
 
 ---
 
@@ -21,16 +23,10 @@ probabilidade de cada fila estar em cada estado (quantidade de clientes no
 sistema), além do número de perdas (clientes rejeitados por falta de espaço
 na fila).
 
-Esta tag/versão (`original`) preserva o código **exatamente como foi entregue
-na época**, incluindo bugs conhecidos, para servir de registro histórico.
-Uma versão revisada, com os bugs corrigidos, está disponível na tag
-`bugfix` (ou na branch principal, se você estiver lendo isso depois da
-correção).
-
-> **Aviso:** esta versão contém bugs conhecidos que afetam a corretude dos
-> resultados, listados na seção [Bugs conhecidos](#bugs-conhecidos-nesta-versão)
-> abaixo. Não utilize esta versão para gerar resultados que você pretenda usar
-> de fato — use a versão corrigida.
+Esta versão corrige bugs identificados em uma revisão de código feita bem
+depois da entrega original (ver [changelog](#correções-aplicadas--fixes-applied)).
+A submissão original, sem essas correções, foi preservada na tag `original`,
+como registro histórico.
 
 ### Como funciona
 
@@ -52,7 +48,7 @@ que descreve:
   fila, no formato `idxFila,tempo`.
 - `seed`: lista de números pseudoaleatórios (0 a 1) a serem usados no modo
   `SEED`.
-- `roundNumber`: quantidade de "rounds" a executar no modo `RANDOM`.
+- `roundNumber`: quantidade de rounds (eventos) a executar no modo `RANDOM`.
 - `mode`: o modo de execução — `SEED`, `RANDOM` ou `PRINT_RANDOM` (ver abaixo).
 
 Cada fila recebe um índice automático (0, 1, 2, ...) na ordem em que aparece
@@ -61,10 +57,11 @@ no XML — é esse índice que deve ser usado em `network` e `arrivals`.
 ### Modos de execução
 
 - **SEED**: a simulação roda usando exatamente os números da lista `seed` do
-  XML, na ordem. Útil para reproduzir um resultado específico (ex.: para
-  verificar contas feitas manualmente em sala de aula).
+  XML, na ordem, até esgotá-los. Útil para reproduzir um resultado específico
+  (ex.: para verificar contas feitas manualmente em sala de aula).
 - **RANDOM**: a simulação roda usando um gerador congruencial linear (LCG)
-  próprio (`RandomGenerator`), por `roundNumber` chamadas.
+  próprio (`RandomGenerator`), por `roundNumber` rounds (eventos de chegada
+  ou saída processados).
 - **PRINT_RANDOM**: apenas gera `roundNumber` números pseudoaleatórios e
   grava em `seeds.txt`, sem rodar a simulação (útil para inspecionar a
   qualidade do gerador).
@@ -101,32 +98,31 @@ Os modelos usados nos testes originais estão em
 `src/main/resources/simulador/` (formato `.yml`, apenas para referência —
 não são lidos pelo código, que lê somente `model.xml`).
 
-### Bugs conhecidos nesta versão
+### Correções aplicadas / Fixes applied
 
-Identificados em revisão posterior do código (mantidos aqui para registro
-histórico; corrigidos na tag `bugfix`):
+Em relação à versão original (tag `original`), esta versão corrige:
 
 1. **Gerador de números aleatórios incorreto**
-   (`NumberGenerator/RandomGenerator.java`): o estado do gerador congruencial
-   linear é realimentado já dividido por `m`, em vez de manter o estado como
-   inteiro. Isso quebra as propriedades estatísticas do gerador — afeta
-   diretamente o modo `RANDOM`, que é o modo configurado por padrão no
-   `model.xml` deste repositório.
-2. **`roundNumber` não corresponde a "rounds" da simulação**: no modo
-   `RANDOM`, o contador é decrementado a cada número aleatório consumido, e
-   cada round pode consumir de 1 a 4 números — então o número real de
-   eventos simulados é menor (e variável) em relação ao configurado.
-3. **Contador de índice duplicado** em `Event` e `Queue`: o índice interno é
-   incrementado duas vezes por objeto criado (inicializador de campo +
-   atribuição no construtor), fazendo os IDs saltarem de 2 em 2. Não afeta a
-   corretude da simulação, só os IDs internos.
-4. **Caminho de configuração fixo**: `Config.java` lê
-   `./src/main/resources/model.xml` como caminho relativo ao diretório de
-   execução, em vez de carregar via classpath — só funciona se executado a
-   partir da raiz do projeto.
-5. **Condição inatingível** em `Queue.chegada()`: a checagem `maxSize < 0`
-   nunca é verdadeira, pois o valor padrão de fila "infinita" é
-   `Integer.MAX_VALUE`, não um valor negativo.
+   (`NumberGenerator/RandomGenerator.java`): o estado do LCG era realimentado
+   já dividido por `m`, em vez de manter o estado como inteiro entre
+   chamadas — o que quebrava as propriedades estatísticas do gerador. Agora
+   o estado (`lastX`) é mantido como inteiro, e só é dividido por `m` no
+   valor retornado, como um LCG padrão.
+2. **`roundNumber` agora conta rounds de fato**: no modo `RANDOM`, o
+   critério de parada deixou de ser "número de sementes consumidas" (que
+   variava por round) e passou a ser o número de rounds efetivamente
+   processados (`Escalonador.indexRound`), que é o que o `roundNumber` do
+   `model.xml` e o `README` sempre disseram fazer.
+3. **Contador de índice duplicado**, em `Event` e `Queue`: removida a
+   atribuição redundante no construtor (o campo já é inicializado uma única
+   vez, na declaração), então os IDs voltam a ser sequenciais.
+4. **Caminho de configuração fixo**: `Config.java` agora carrega
+   `model.xml` via classpath (`getResourceAsStream`) em vez de um caminho
+   relativo ao diretório de execução — funciona independente de onde o
+   `.jar`/execução for disparado.
+5. **Condição inatingível** em `Queue.chegada()`: removida a checagem morta
+   `maxSize < 0`, que nunca era verdadeira (fila "infinita" usa
+   `Integer.MAX_VALUE`, não um valor negativo).
 
 ---
 
@@ -142,16 +138,10 @@ computes, for each queue, the probability of being in each state (number of
 customers in the system), plus the number of losses (customers rejected due
 to a full queue).
 
-This tag/version (`original`) preserves the code **exactly as it was
-submitted at the time**, including known bugs, to serve as a historical
-record. A revised version with the bugs fixed is available under the
-`bugfix` tag (or on the main branch, if you're reading this after the fix
-was applied).
-
-> **Warning:** this version has known bugs that affect the correctness of
-> its results, listed in [Known bugs](#known-bugs-in-this-version) below.
-> Don't rely on this version to produce results you intend to actually use —
-> use the fixed version instead.
+This version fixes bugs found during a code review done well after the
+original submission (see the [changelog](#correções-aplicadas--fixes-applied)
+above). The original, uncorrected submission was preserved under the
+`original` tag as a historical record.
 
 ### How it works
 
@@ -172,7 +162,7 @@ The simulator is configured through an XML file
 - `arrivals` / `arrival`: the time of the first external arrival at each
   queue, formatted as `queueIdx,time`.
 - `seed`: a list of pseudo-random numbers (0 to 1) used in `SEED` mode.
-- `roundNumber`: number of "rounds" to run in `RANDOM` mode.
+- `roundNumber`: number of rounds (events) to run in `RANDOM` mode.
 - `mode`: the run mode — `SEED`, `RANDOM`, or `PRINT_RANDOM` (see below).
 
 Each queue gets an automatic index (0, 1, 2, ...) in the order it appears in
@@ -181,10 +171,11 @@ the XML — that index is what you use in `network` and `arrivals`.
 ### Run modes
 
 - **SEED**: the simulation runs using exactly the numbers listed in the
-  XML's `seed` tag, in order. Useful for reproducing a specific result
-  (e.g. to check hand-computed results from class).
+  XML's `seed` tag, in order, until they run out. Useful for reproducing a
+  specific result (e.g. to check hand-computed results from class).
 - **RANDOM**: the simulation runs using a custom linear congruential
-  generator (`RandomGenerator`), for `roundNumber` draws.
+  generator (`RandomGenerator`), for `roundNumber` rounds (arrival/departure
+  events processed).
 - **PRINT_RANDOM**: just generates `roundNumber` pseudo-random numbers and
   writes them to `seeds.txt`, without running the simulation (useful for
   inspecting the generator's output).
@@ -221,30 +212,28 @@ The models used in the original tests live under
 `src/main/resources/simulador/` (`.yml` format, for reference only — they
 are not read by the code, which only reads `model.xml`).
 
-### Known bugs in this version
+### Fixes applied
 
-Found during a later code review (kept here for the historical record; fixed
-in the `bugfix` tag):
+Compared to the original version (tag `original`), this version fixes:
 
 1. **Incorrect random number generator**
-   (`NumberGenerator/RandomGenerator.java`): the linear congruential
-   generator's state is fed back already divided by `m`, instead of being
-   kept as an integer. This breaks the generator's statistical properties —
-   it directly affects `RANDOM` mode, which is the mode configured by
-   default in this repository's `model.xml`.
-2. **`roundNumber` doesn't map to simulation "rounds"**: in `RANDOM` mode,
-   the counter is decremented every time a random number is drawn, and each
-   round can draw anywhere from 1 to 4 numbers — so the actual number of
-   simulated events ends up smaller (and variable) relative to what was
-   configured.
-3. **Duplicate index counter** in `Event` and `Queue`: the internal index is
-   incremented twice per created object (once in the field initializer, once
-   in the constructor body), so IDs skip by 2. Doesn't affect simulation
-   correctness, only the internal IDs.
-4. **Hardcoded config path**: `Config.java` reads
-   `./src/main/resources/model.xml` as a path relative to the working
-   directory, instead of loading it from the classpath — it only works when
-   run from the project root.
-5. **Unreachable condition** in `Queue.chegada()`: the `maxSize < 0` check is
-   never true, since the default value for an "unbounded" queue is
-   `Integer.MAX_VALUE`, not a negative number.
+   (`NumberGenerator/RandomGenerator.java`): the LCG's state used to be fed
+   back already divided by `m`, instead of being kept as an integer between
+   calls — which broke the generator's statistical properties. The state
+   (`lastX`) is now kept as an integer, and only divided by `m` in the
+   returned value, as a standard LCG does.
+2. **`roundNumber` now counts actual rounds**: in `RANDOM` mode, the
+   stopping condition used to be "number of random numbers consumed" (which
+   varied per round), and is now the number of rounds actually processed
+   (`Escalonador.indexRound`) — which is what `roundNumber` in `model.xml`
+   and the README always claimed it did.
+3. **Duplicate index counter**, in `Event` and `Queue`: removed the
+   redundant assignment in the constructor (the field is now initialized
+   exactly once, at declaration), so IDs are sequential again.
+4. **Hardcoded config path**: `Config.java` now loads `model.xml` from the
+   classpath (`getResourceAsStream`) instead of a path relative to the
+   working directory — it now works regardless of where the `.jar`/process
+   is launched from.
+5. **Unreachable condition** in `Queue.chegada()`: removed the dead
+   `maxSize < 0` check, which was never true (an "unbounded" queue uses
+   `Integer.MAX_VALUE`, not a negative number).

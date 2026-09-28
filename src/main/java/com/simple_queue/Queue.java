@@ -30,12 +30,11 @@ public class Queue {
     this.departureInterval = departureInterval;
     this.serverNumber = serverNumber;
     this.maxSize = maxSize;
-    this.index = _index++;
   }
 
   public void chegada(boolean newEvent) throws Exception {
     Clock.getInstance().calculateTime();
-    if (this.maxSize < 0 || this.currentSize < this.maxSize) {
+    if (this.currentSize < this.maxSize) {
       this.currentSize++;
       if (this.currentSize <= this.serverNumber) {
         Escalonador r = this.escalonador;
