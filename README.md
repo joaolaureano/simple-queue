@@ -1,51 +1,73 @@
-THIS IS A SIMULATION OF QUEUE.
+# Simple Queue — V1 (original version)
 
-THE PARAMETERS NEED TO BE SET IN main/java/resources/model.xml.
-THE PARAMETERS ARE...
-    queues -> THE LIST OF ALL QUEUES PRESENTED IN SIMULATION
-    queue -> ALL PARAMETERS FOR A QUEUE. PARAMETERS ARE BELOW, IDENTED
-        arrivalInterval -> THE INTERVAL FOR ARRIVAL EVENTS. THE VALUES ARE SEPARATED BY A COMMA AND MUST BE TWO VALUES ONLY
-        departureInterval -> THE INTERVAL FOR DROPOUT EVENTS. THE VALUES ARE SEPARATED BY A COMMA AND MUST BE TWO VALUES ONLY
-        sizeQueue -> THE QUEUE SIZE
-        serverNumber -> NUMBERS OF SERVER
-    network -> THE LIST OF ALL QUEUES CONNECTIONS
-        connection -> ARRAY THAT CONTAINS TWO NUMBER, THE ORIGIN AND THE DESTINY OF A GIVEN CONNECTION. 
-            FOR EXAMPLE, IF CONNECTION IS [0,1], IT MEANS THAT THE QUEUE 1 WILL BE THE DESTINY OF EVENTS AFTER BEING PROCESSED BY 0
-    seed -> THE SEEDS TO BE USED, IF REQUIRED
-    roundNumber -> NUMBERS OF ROUNDS TO BE RUNNED BY THE SCRIPT, WHEN USING THE RANDOM NUMBER GENERATOR
-    mode -> WHAT THE SCRIPT WILL DO. MORE INFORMATIONS BELOW
-    arrivals -> SPECIFY THE TIME THAT THE FIRST EVENTS HAPPEN IN EACH QUEUE
-        arrival -> A TWO NUMBER VALUE THAT DEFINE THE QUEUE AND THE MOMENT THAT THE FIRST EVENT HAPPEN. FOR EXAMPLE, IN <arrival>0,2.5</arrival>, THE QUEUE 0 WILL START WITH AN EVENT AT THE MOMENT 2.5.
+**[Leia em português / Read this in Portuguese](README.pt-BR.md)**
 
-ALL QUEUE WILL BE CREATED WITH AN AUTO-INCREMENT ID. YOU DO NOT NEED TO SET THIS.
-IF YOU CREATE 3 QUEUES IN THE model.xml, THEY WILL HAVE THE ID 0,1,2 FOR EXAMPLE.
-NOTE THAT YOU MUST USE THIS ID's TO CREATE THE CONNECTION AND NETWORK. USING PREVIOUS EXAMPLE, [0,1] WOULD BE A VALID EXAMPLE. [1,3] WOULD BE AN INVALID EXAMPLE.
+A **discrete-event simulator** for networks of **M/M/c queues** (several
+servers per queue, probabilistic routing between queues). At the end of a
+run it reports, for each queue, how long it spent in each state (number of
+customers in the system), the probability of each state and the number of
+losses. Built as coursework for a college class on simulation / queueing
+theory.
 
-THIS USES MAVEN, SO MUST BE INSTALLED
+> **This is the archived original version**, exactly as it was submitted.
+> The only change on top of it is this README, which replaces the original
+> all-caps notes with the same information. The fixed version lives on the
+> [`master`](../../tree/master) branch.
 
-WHEN RUNNING THE CODE, THERE ARE THREE MODES
-IT MUST BE SPECIFIED AN ARGUMENT FOR THE MODE
-THE MODES AVAILABLE ARE "SEED" AND "RANDOM" AND "PRINT_RANDOM"
-    FOR "SEED", THE SCRIPT WILL RUN USING THE SEED DEFINED. THE seed VALUE IN XML MUST BE SPECIFIED
-    FOR "RANDOM", THE SCRIPT WILL RUN USING THE RANDOMGENERATOR. THE roundNumber VALUE IN XML MUST BE SPECIFIED .
-    FOR "PRINT_RANDOM", IT WILL GENERATE THE SEEDS ACCORDING TO THE RANDOMGENERATOR SPECIFICATION. THE AMOUNT OF SEEDS DEPENDS ON roundNumber
+## Configuration
 
-IF REQUIRED, "App.java" IS THE MAIN CLASS
-TO RUN THE CODE, YOU MUST USE THIS COMMAND
-    mvn exec:java -Dexec.mainClass="com.simple_queue.App"
-YOU CAN USE "run" FILE TO RUN 
+The parameters are read from `src/main/resources/model.xml`:
 
-THE RESULT OF SCENARIO WILL BE STORED IN "result.txt"
+- `queues` / `queue`: the queues in the simulation, each with:
+  - `arrivalInterval`: interval for arrival events — two comma-separated values.
+  - `departureInterval`: interval for departure events — two comma-separated values.
+  - `sizeQueue`: the queue's capacity.
+  - `serverNumber`: the number of servers.
+- `network` / `connection`: the connections between queues, as origin and
+  destination. `0,1` means queue 1 receives the events after they are
+  processed by queue 0.
+- `seed`: the seeds to use, when required.
+- `roundNumber`: the number of rounds to run when using the random number
+  generator.
+- `mode`: what the program does (see below).
+- `arrivals` / `arrival`: when the first event happens in each queue.
+  `<arrival>0,2.5</arrival>` means queue 0 starts with an event at time 2.5.
 
-OUTPUT HAS FOLLOWING STRUCTURE
-    CLOCK INFORMATION
-        IT HAS 3 COLUMNS
-        STATE, WHICH MEANS NUMBER OF PEOPLE
-        TIME, WHICH MEANS HOW MUCH TIME THE QUEUE STORED THIS AMOUNT OF PEOPLE
-        PROBABILITY, WHICH MEANS THE PROBABILITY OF THIS STATE HAPPEN
+Queues get an auto-increment id in the order they appear (0, 1, 2, ...), and
+those ids are the ones used in `network` and `arrivals`: with three queues,
+`0,1` is valid and `1,3` is not.
 
+## Modes
 
-ALL MODELS TESTED IN THE SIMULATOR CAN BE FOUND IN THE "main/java/resources/simulador" FOLDER, 
-AND THE NAME IS THE SAME, BUT EXTENSION IS DIFFERENT.
+- `SEED`: runs with the seeds listed in `seed`.
+- `RANDOM`: runs with the built-in random number generator, for
+  `roundNumber` rounds.
+- `PRINT_RANDOM`: only generates `roundNumber` seeds with the generator.
 
-ALL RESULTS ARE STORED IN ./Resultados
+## Running
+
+Requires Maven. `App.java` is the main class.
+
+```sh
+mvn exec:java -Dexec.mainClass="com.simple_queue.App"
+```
+
+`Commands/run` runs the same command. The result goes to `result.txt`, with
+three columns per queue: **STATE** (number of customers), **TIME** (how long
+the queue held that many customers) and **PROBABILITY** (the probability of
+that state).
+
+The tested models are in `src/main/resources/simulador`, with the same name
+as the XML model and a different extension.
+
+## Known issues in this version
+
+These were found later and are fixed on `master`:
+
+1. The random number generator feeds back its state already divided by `m`,
+   which breaks the LCG.
+2. In `RANDOM` mode, `roundNumber` counts consumed random numbers, not
+   rounds.
+3. `Event` and `Queue` assign their index counter twice, so ids skip.
+4. `model.xml` is loaded from a path relative to the working directory.
+5. `Queue.chegada()` has an unreachable `maxSize < 0` check.
